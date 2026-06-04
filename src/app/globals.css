@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f2f4f3;
+  --surface: #ffffff;
+  --ink: #141c1b;
+  --caption: #8a9691;
+  --border: #e0e6e3;
+  --lime: #c1e256;
+  --forest: #2d4636;
+  --forest-dark: #141c1b;
+  --lime-track: #eef5d6;
+  --red: #ef4444;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-caption: var(--caption);
+  --color-border: var(--border);
+  --color-lime: var(--lime);
+  --color-forest: var(--forest);
+  --color-forest-dark: var(--forest-dark);
+  --color-lime-track: var(--lime-track);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.card {
+  @apply rounded-[22px] border border-[var(--border)] bg-[var(--surface)] shadow-sm;
+}
+
+.card-compact {
+  @apply rounded-2xl;
+}
+
+.balance-card {
+  @apply rounded-[28px] bg-[var(--forest-dark)] text-white p-5;
+}
+
+.trend-up {
+  @apply rounded-full bg-[var(--lime-track)] px-2 py-0.5 text-[10px] font-bold text-[var(--forest)];
+}
+
+.trend-down {
+  @apply rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold text-[var(--red)];
+}
+
+.chip {
+  @apply inline-flex items-center gap-1 rounded-full bg-[var(--lime-track)] px-2.5 py-1 text-[11px] font-semibold text-[var(--forest)];
+}
+
+.btn-primary {
+  @apply rounded-full bg-[var(--lime)] px-5 py-2.5 text-sm font-bold text-[var(--ink)] transition hover:opacity-90 disabled:opacity-50;
+}
+
+.btn-outline {
+  @apply rounded-full border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--bg)];
+}
+
+.input {
+  @apply w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none focus:border-[var(--forest)] focus:ring-2 focus:ring-[var(--lime)]/30;
+}
+
+/* ——— Dashboard header ——— */
+.dashboard-header {
+  @apply mb-6 flex flex-col gap-4 border-b border-[var(--border)] pb-6 sm:flex-row sm:items-start sm:justify-between;
+}
+
+.dashboard-welcome {
+  @apply text-sm font-medium text-[var(--caption)];
+}
+
+.dashboard-welcome-name {
+  @apply font-semibold text-[var(--forest)];
+}
+
+.dashboard-title-row {
+  @apply mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1;
+}
+
+.dashboard-title {
+  @apply text-2xl font-bold tracking-tight text-[var(--ink)] md:text-[28px];
+}
+
+.dashboard-meta {
+  @apply text-sm text-[var(--caption)];
+}
+
+.dashboard-brand {
+  @apply mt-1 text-xs text-[var(--caption)];
+}
+
+.dashboard-header-actions {
+  @apply flex shrink-0 items-center gap-2;
+}
+
+.btn-toolbar {
+  @apply inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--bg)] active:scale-[0.98];
+}
+
+.btn-toolbar-muted {
+  @apply text-[var(--caption)] hover:bg-[var(--bg)] hover:text-[var(--ink)];
+}
+
+/* ——— Shared filter controls (selaras kartu & chip app) ——— */
+.filter-bar {
+  @apply p-5;
+}
+
+.filter-bar-grid {
+  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5;
+}
+
+.filter-field {
+  @apply flex min-w-0 flex-col;
+}
+
+.filter-field-label {
+  @apply mb-2 flex h-4 items-center text-xs font-semibold leading-none text-[var(--forest)];
+}
+
+/* Shell tinggi tetap 44px — periode & toko identik */
+.control-track-period {
+  @apply box-border grid h-11 w-full grid-cols-4 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1;
+}
+
+.control-track-select {
+  @apply relative box-border flex h-11 w-full items-center rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1;
+}
+
+.control-pill {
+  @apply flex h-full min-h-0 w-full items-center justify-center rounded-[12px] border-0 bg-transparent p-0 transition;
+}
+
+.control-pill-text {
+  @apply whitespace-nowrap px-0.5 text-center text-[11px] font-semibold leading-none text-[var(--caption)] sm:text-xs;
+}
+
+.control-pill:hover .control-pill-text {
+  @apply text-[var(--forest)];
+}
+
+.control-pill:hover {
+  @apply bg-[var(--lime-track)];
+}
+
+.control-pill-active {
+  @apply bg-[var(--lime)];
+}
+
+.control-pill-active .control-pill-text {
+  @apply font-bold text-[var(--ink)];
+}
+
+.control-pill-active:hover {
+  @apply bg-[var(--lime)];
+}
+
+.control-pill-active:hover .control-pill-text {
+  @apply text-[var(--ink)];
+}
+
+.control-select-icon {
+  @apply pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[var(--forest)];
+}
+
+.control-select-chevron {
+  @apply pointer-events-none absolute right-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[var(--caption)];
+}
+
+.control-select {
+  @apply h-full w-full min-h-0 min-w-0 cursor-pointer appearance-none rounded-[12px] border-0 bg-transparent pl-9 pr-9 text-xs font-semibold text-[var(--ink)] outline-none focus:bg-[var(--lime-track)]/60 sm:text-sm;
+}
+
+.section-heading {
+  @apply text-base font-bold text-[var(--ink)];
+}
+
+.section-subheading {
+  @apply mt-0.5 text-xs text-[var(--caption)];
+}
+
+.kpi-row {
+  @apply grid grid-cols-1 gap-2.5 sm:grid-cols-3;
+}
