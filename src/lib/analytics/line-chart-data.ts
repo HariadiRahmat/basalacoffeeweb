@@ -1,8 +1,8 @@
 import { orderInPeriod, startOfDay } from "@/lib/analytics/branch-insights";
+import { LEGACY_DEFAULT_BRANCH_ID } from "@/lib/branch-scope";
 import {
   BranchRecap,
   InsightPeriod,
-  LEGACY_DEFAULT_BRANCH_ID,
   MultiStoreChartData,
   Order,
 } from "@/lib/types";

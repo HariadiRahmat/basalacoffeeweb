@@ -1,3 +1,38 @@
+export type MenuCategory =
+  | "coffee"
+  | "non_coffee"
+  | "tea"
+  | "snack"
+  | "dessert";
+
+export const MENU_CATEGORY_LABELS: Record<MenuCategory, string> = {
+  coffee: "Kopi",
+  non_coffee: "Non-Kopi",
+  tea: "Teh",
+  snack: "Snack",
+  dessert: "Dessert",
+};
+
+export interface MenuCupSize {
+  id: string;
+  label: string;
+  price: number;
+  volumeMl?: number;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+  category: MenuCategory;
+  code?: string;
+  description?: string;
+  isAvailable: boolean;
+  stock: number;
+  branchId?: string;
+  cupSizes: MenuCupSize[];
+}
+
 export type InsightPeriod = "today" | "week" | "month" | "year";
 
 export type OrderStatus =
@@ -5,7 +40,8 @@ export type OrderStatus =
   | "processing"
   | "ready"
   | "completed"
-  | "cancelled";
+  | "cancelled"
+  | "open";
 
 export interface OrderLine {
   menuItemId: string;
@@ -87,7 +123,6 @@ export interface OwnerProfile {
   role: string;
 }
 
-export const LEGACY_DEFAULT_BRANCH_ID = "branch-1";
 
 export const PERIOD_LABELS: Record<InsightPeriod, string> = {
   today: "Hari Ini",

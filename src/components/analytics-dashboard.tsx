@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -26,20 +26,12 @@ import {
   salesChartTitle,
 } from "@/lib/analytics/period-metrics";
 import { useAuth } from "@/lib/auth-context";
-import {
-  fetchBranches,
-  fetchCustomerCount,
-  fetchOrders,
-} from "@/lib/firestore-data";
+import { useBranchFilter } from "@/lib/branch-filter-context";
+import { useDashboardData } from "@/lib/dashboard-data-context";
 import { chartAxisLabel, compactIdr, formatIdr } from "@/lib/format";
-import { DashboardFilterBar } from "@/components/dashboard-filters";
+import { SharedFilterBar } from "@/components/shared-filter-bar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import {
-  Branch,
-  BranchRecap,
-  InsightPeriod,
-  Order,
-} from "@/lib/types";
+import { BranchRecap, InsightPeriod } from "@/lib/types";
 
 const PIE_COLORS = ["#C1E256", "#2D4636", "#A8CA3F", "#DCE5E1", "#8A9691"];
 
@@ -68,43 +60,11 @@ function TrendBadge({
 
 export function AnalyticsDashboard() {
   const { profile, signOut } = useAuth();
+  const { branchFilter, branches, branchName } = useBranchFilter();
+  const { orders, customerCount, loading, error, refresh } = useDashboardData();
   const [period, setPeriod] = useState<InsightPeriod>("today");
-  const [branchFilter, setBranchFilter] = useState<string | null>(null);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [customerCount, setCustomerCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [b, o, c] = await Promise.all([
-        fetchBranches(true),
-        fetchOrders(),
-        fetchCustomerCount(),
-      ]);
-      setBranches(b);
-      setOrders(o);
-      setCustomerCount(c);
-      if (
-        branchFilter &&
-        !b.some((x) => x.id === branchFilter)
-      ) {
-        setBranchFilter(null);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat data");
-    } finally {
-      setLoading(false);
-    }
-  }, [branchFilter]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const now = useMemo(() => new Date(), [loading, period, branchFilter]);
+  const now = useMemo(() => new Date(), [loading, period, branchFilter, orders.length]);
   const insight = useMemo(
     () => computeNetworkInsights(period, branches, orders, now),
     [period, branches, orders, now],
@@ -127,9 +87,7 @@ export function AnalyticsDashboard() {
   }, [branchFilter, period, insight.branches, orders, now]);
 
   const branchLabel =
-    branchFilter === null
-      ? "Semua toko"
-      : branches.find((b) => b.id === branchFilter)?.name ?? "Toko";
+    branchFilter === null ? "Semua toko" : branchName(branchFilter);
 
   const topProducts = metrics.topProducts.filter((p) => p.revenue > 0).slice(0, 5);
   const pieTotal = topProducts.reduce((s, p) => s + p.revenue, 0);
@@ -146,7 +104,7 @@ export function AnalyticsDashboard() {
     return (
       <div className="card mx-auto max-w-lg p-8 text-center">
         <p className="text-sm text-[var(--red)]">{error}</p>
-        <button type="button" onClick={load} className="btn-primary mt-4">
+        <button type="button" onClick={refresh} className="btn-primary mt-4">
           Coba lagi
         </button>
       </div>
@@ -171,7 +129,7 @@ export function AnalyticsDashboard() {
         ownerName={profile?.fullName ?? "Owner"}
         period={period}
         dateLabel={dateLabel}
-        onRefresh={load}
+        onRefresh={refresh}
         onSignOut={() => signOut()}
       />
 
@@ -185,13 +143,7 @@ export function AnalyticsDashboard() {
           </p>
         </div>
 
-        <DashboardFilterBar
-          period={period}
-          branchFilter={branchFilter}
-          branches={branches}
-          onPeriodChange={setPeriod}
-          onBranchChange={setBranchFilter}
-        />
+        <SharedFilterBar period={period} onPeriodChange={setPeriod} />
 
         <div className="balance-card mb-3">
           <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--lime)]">

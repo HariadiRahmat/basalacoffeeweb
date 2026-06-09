@@ -17,12 +17,16 @@ export function DashboardHeader({
   dateLabel,
   onRefresh,
   onSignOut,
+  title = "Dashboard",
+  subtitle,
 }: {
   ownerName: string;
   period: InsightPeriod;
   dateLabel: string;
   onRefresh: () => void;
   onSignOut: () => void;
+  title?: string;
+  subtitle?: string;
 }) {
   return (
     <header className="dashboard-header">
@@ -31,12 +35,14 @@ export function DashboardHeader({
           Welcome back, <span className="dashboard-welcome-name">{ownerName}</span>
         </p>
         <div className="dashboard-title-row">
-          <h1 className="dashboard-title">Dashboard</h1>
+          <h1 className="dashboard-title">{title}</h1>
           <span className="dashboard-meta">
             {PERIOD_LABELS[period]} · {dateLabel}
           </span>
         </div>
-        <p className="dashboard-brand">Coffee Basala · Owner</p>
+        <p className="dashboard-brand">
+          {subtitle ?? "Coffee Basala · Owner"}
+        </p>
       </div>
       <div className="dashboard-header-actions">
         <button type="button" onClick={onRefresh} className="btn-toolbar">

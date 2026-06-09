@@ -2,10 +2,12 @@ import {
   Branch,
   BranchRecap,
   InsightPeriod,
-  LEGACY_DEFAULT_BRANCH_ID,
   NetworkInsight,
   Order,
 } from "@/lib/types";
+import { LEGACY_DEFAULT_BRANCH_ID } from "@/lib/branch-scope";
+
+export { matchesBranchScope } from "@/lib/branch-scope";
 
 export function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -47,15 +49,6 @@ export function referenceNowForPrevious(period: InsightPeriod, now: Date): Date 
     case "year":
       return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   }
-}
-
-export function matchesBranchScope(
-  entityBranchId: string | undefined,
-  scopedBranchId: string,
-): boolean {
-  const id = entityBranchId?.trim();
-  if (!id) return scopedBranchId === LEGACY_DEFAULT_BRANCH_ID;
-  return id === scopedBranchId;
 }
 
 export function computeNetworkInsights(
