@@ -1,5 +1,47 @@
 import type { NextConfig } from "next";
 
+const firebaseCsp = [
+  "default-src 'self'",
+  [
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "https://apis.google.com",
+    "https://www.gstatic.com",
+    "https://www.google.com",
+  ].join(" "),
+  [
+    "script-src-elem 'self' 'unsafe-inline'",
+    "https://apis.google.com",
+    "https://www.gstatic.com",
+    "https://www.google.com",
+  ].join(" "),
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: blob: https://www.gstatic.com https://www.google.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  [
+    "connect-src 'self'",
+    "https://firestore.googleapis.com",
+    "https://identitytoolkit.googleapis.com",
+    "https://securetoken.googleapis.com",
+    "https://www.googleapis.com",
+    "https://apis.google.com",
+    "https://*.googleapis.com",
+    "https://*.firebaseio.com",
+    "wss://*.firebaseio.com",
+    "wss://firestore.googleapis.com",
+    "https://*.firebaseapp.com",
+    "https://*.cloudfunctions.net",
+  ].join(" "),
+  [
+    "frame-src 'self'",
+    "https://accounts.google.com",
+    "https://apis.google.com",
+    "https://*.firebaseapp.com",
+  ].join(" "),
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
   {
@@ -15,18 +57,7 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://www.gstatic.com",
-      "font-src 'self' data: https://fonts.gstatic.com",
-      "connect-src 'self' https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com",
-      "frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://apis.google.com",
-      "frame-ancestors 'self'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; "),
+    value: firebaseCsp,
   },
 ];
 
