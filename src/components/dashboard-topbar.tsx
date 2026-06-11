@@ -3,6 +3,7 @@
 import { FeatureIcon } from "@/components/feature-icon";
 import { useAuth } from "@/lib/auth-context";
 import { useBranchFilter } from "@/lib/branch-filter-context";
+import { useMobileNav } from "@/lib/mobile-nav-context";
 import { usePathname } from "next/navigation";
 import { MAIN_NAV } from "@/lib/navigation";
 
@@ -39,6 +40,7 @@ export function DashboardTopbar({
 }) {
   const { profile, signOut } = useAuth();
   const { branchFilter, setBranchFilter, branches } = useBranchFilter();
+  const { openDrawer } = useMobileNav();
   const pathname = usePathname();
   const meta = pageMeta(pathname);
   const ownerName = profile?.fullName ?? "Owner";
@@ -48,15 +50,27 @@ export function DashboardTopbar({
   return (
     <header className="dashboard-topbar">
       <div className="dashboard-topbar-left">
-        <p className="dashboard-topbar-greeting">
-          Hello, <strong>{ownerName.split(" ")[0]}</strong>
-        </p>
-        {title && (
-          <div className="dashboard-topbar-title-row">
-            <h1 className="dashboard-topbar-title">{title}</h1>
-            {subtitle && <span className="dashboard-topbar-subtitle">{subtitle}</span>}
+        <div className="dashboard-topbar-head">
+          <button
+            type="button"
+            className="mobile-menu-btn"
+            aria-label="Buka menu navigasi"
+            onClick={openDrawer}
+          >
+            <FeatureIcon name="menu" className="h-5 w-5" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="dashboard-topbar-greeting">
+              Hello, <strong>{ownerName.split(" ")[0]}</strong>
+            </p>
+            {title && (
+              <div className="dashboard-topbar-title-row">
+                <h1 className="dashboard-topbar-title">{title}</h1>
+                {subtitle && <span className="dashboard-topbar-subtitle">{subtitle}</span>}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <div className="dashboard-topbar-actions">

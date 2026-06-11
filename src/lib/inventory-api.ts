@@ -10,6 +10,12 @@ import {
   where,
 } from "firebase/firestore";
 import { getFirestoreDb } from "@/lib/firebase";
+import {
+  assertNonEmptyString,
+  assertNonNegativeNumber,
+  assertPositiveNumber,
+  clampLimit,
+} from "@/lib/security";
 
 export type InventoryUnit = "gram" | "ml" | "liter" | "pcs" | "kg";
 export type MovementType = "IN" | "OUT" | "TRANSFER" | "ADJUSTMENT" | "OPNAME";
@@ -162,7 +168,16 @@ export async function listStockMovements(
     };
   });
   items.sort((a, b) => b.created_at.localeCompare(a.created_at));
-  return items.slice(0, limit);
+  return items.slice(0, clampLimit(limit));
+}
+
+function assertIngredientBranch(
+  ingredientData: Record<string, unknown> | undefined,
+  branchId: string,
+): void {
+  if (String(ingredientData?.branch_id ?? "") !== branchId) {
+    throw new Error("Bahan baku tidak termasuk outlet yang dipilih");
+  }
 }
 
 async function writeMovement(
@@ -187,35 +202,42 @@ export async function recordStockIn(body: {
   received_date: string;
   created_by?: string;
 }) {
+  const branchId = assertNonEmptyString(body.branch_id, "Outlet");
+  const ingredientId = assertNonEmptyString(body.ingredient_id, "Bahan baku");
+  const quantity = assertPositiveNumber(body.quantity, "Jumlah");
+  const unitPrice = assertNonNegativeNumber(body.unit_price, "Harga satuan");
+  const supplier = assertNonEmptyString(body.supplier, "Supplier");
+
   const db = getFirestoreDb();
   const stockInRef = doc(collection(db, "stock_ins"));
-  const totalPrice = body.quantity * body.unit_price;
+  const totalPrice = quantity * unitPrice;
 
   await runTransaction(db, async (tx) => {
-    const ingRef = doc(db, "ingredients", body.ingredient_id);
+    const ingRef = doc(db, "ingredients", ingredientId);
     const ingSnap = await tx.get(ingRef);
     if (!ingSnap.exists()) throw new Error("Bahan baku tidak ditemukan");
+    assertIngredientBranch(ingSnap.data() as Record<string, unknown>, branchId);
     const before = Number(ingSnap.data()?.current_stock ?? 0);
-    const after = before + body.quantity;
+    const after = before + quantity;
     tx.update(ingRef, { current_stock: after, updated_at: new Date().toISOString() });
     await writeMovement(tx, db, {
-      ingredient_id: body.ingredient_id,
-      branch_id: body.branch_id,
+      ingredient_id: ingredientId,
+      branch_id: branchId,
       movement_type: "IN",
-      quantity: body.quantity,
+      quantity,
       stock_before: before,
       stock_after: after,
       reference_type: "stock_in",
       reference_id: stockInRef.id,
-      notes: `Penerimaan dari ${body.supplier}`,
+      notes: `Penerimaan dari ${supplier}`,
       created_by: body.created_by,
     });
     tx.set(stockInRef, {
-      branch_id: body.branch_id,
-      supplier: body.supplier,
-      ingredient_id: body.ingredient_id,
-      quantity: body.quantity,
-      unit_price: body.unit_price,
+      branch_id: branchId,
+      supplier,
+      ingredient_id: ingredientId,
+      quantity,
+      unit_price: unitPrice,
       total_price: totalPrice,
       invoice_number: body.invoice_number ?? null,
       received_date: body.received_date,
@@ -235,34 +257,40 @@ export async function recordStockAdjustment(body: {
   notes?: string;
   created_by?: string;
 }) {
+  const branchId = assertNonEmptyString(body.branch_id, "Outlet");
+  const ingredientId = assertNonEmptyString(body.ingredient_id, "Bahan baku");
+  const quantity = assertPositiveNumber(body.quantity, "Jumlah");
+  const reason = assertNonEmptyString(body.reason, "Alasan");
+
   const db = getFirestoreDb();
   const adjRef = doc(collection(db, "stock_adjustments"));
 
   await runTransaction(db, async (tx) => {
-    const ingRef = doc(db, "ingredients", body.ingredient_id);
+    const ingRef = doc(db, "ingredients", ingredientId);
     const ingSnap = await tx.get(ingRef);
     if (!ingSnap.exists()) throw new Error("Bahan baku tidak ditemukan");
+    assertIngredientBranch(ingSnap.data() as Record<string, unknown>, branchId);
     const before = Number(ingSnap.data()?.current_stock ?? 0);
-    if (before < body.quantity) throw new Error("Stok bahan baku tidak mencukupi");
-    const after = before - body.quantity;
+    if (before < quantity) throw new Error("Stok bahan baku tidak mencukupi");
+    const after = before - quantity;
     tx.update(ingRef, { current_stock: after, updated_at: new Date().toISOString() });
     await writeMovement(tx, db, {
-      ingredient_id: body.ingredient_id,
-      branch_id: body.branch_id,
+      ingredient_id: ingredientId,
+      branch_id: branchId,
       movement_type: "ADJUSTMENT",
-      quantity: body.quantity,
+      quantity,
       stock_before: before,
       stock_after: after,
       reference_type: "stock_adjustment",
       reference_id: adjRef.id,
-      notes: body.notes ?? body.reason,
+      notes: body.notes ?? reason,
       created_by: body.created_by,
     });
     tx.set(adjRef, {
-      branch_id: body.branch_id,
-      ingredient_id: body.ingredient_id,
-      quantity: body.quantity,
-      reason: body.reason,
+      branch_id: branchId,
+      ingredient_id: ingredientId,
+      quantity,
+      reason,
       notes: body.notes ?? null,
       created_by: body.created_by ?? null,
       created_at: serverTimestamp(),
@@ -279,29 +307,34 @@ export async function recordStockOpname(body: {
   notes?: string;
   approved_by?: string;
 }) {
+  const branchId = assertNonEmptyString(body.branch_id, "Outlet");
+  const ingredientId = assertNonEmptyString(body.ingredient_id, "Bahan baku");
+  const physicalStock = assertNonNegativeNumber(body.physical_stock, "Stok fisik");
+
   const db = getFirestoreDb();
   const opnameRef = doc(collection(db, "stock_opnames"));
 
   await runTransaction(db, async (tx) => {
-    const ingRef = doc(db, "ingredients", body.ingredient_id);
+    const ingRef = doc(db, "ingredients", ingredientId);
     const ingSnap = await tx.get(ingRef);
     if (!ingSnap.exists()) throw new Error("Bahan baku tidak ditemukan");
+    assertIngredientBranch(ingSnap.data() as Record<string, unknown>, branchId);
     const systemStock = Number(ingSnap.data()?.current_stock ?? 0);
-    const difference = body.physical_stock - systemStock;
+    const difference = physicalStock - systemStock;
 
     tx.update(ingRef, {
-      current_stock: body.physical_stock,
+      current_stock: physicalStock,
       updated_at: new Date().toISOString(),
     });
 
     if (difference !== 0) {
       await writeMovement(tx, db, {
-        ingredient_id: body.ingredient_id,
-        branch_id: body.branch_id,
+        ingredient_id: ingredientId,
+        branch_id: branchId,
         movement_type: "OPNAME",
         quantity: Math.abs(difference),
         stock_before: systemStock,
-        stock_after: body.physical_stock,
+        stock_after: physicalStock,
         reference_type: "stock_opname",
         reference_id: opnameRef.id,
         notes: body.notes ?? `Selisih opname ${difference}`,
@@ -310,10 +343,10 @@ export async function recordStockOpname(body: {
     }
 
     tx.set(opnameRef, {
-      branch_id: body.branch_id,
-      ingredient_id: body.ingredient_id,
+      branch_id: branchId,
+      ingredient_id: ingredientId,
       system_stock: systemStock,
-      physical_stock: body.physical_stock,
+      physical_stock: physicalStock,
       difference,
       notes: body.notes ?? null,
       status: "approved",

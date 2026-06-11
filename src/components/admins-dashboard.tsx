@@ -75,7 +75,7 @@ export function AdminsDashboard() {
                   await reload();
                 }}
                 onDelete={async (id) => {
-                  if (!confirm("Hapus admin ini?")) return;
+                  if (!confirm("Nonaktifkan admin ini? Akun Firebase Auth tetap ada.")) return;
                   await deleteStaffMember(id);
                   await reload();
                 }}

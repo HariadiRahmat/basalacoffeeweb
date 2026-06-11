@@ -8,6 +8,7 @@ import {
   query,
   setDoc,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { filterByBranchScope } from "@/lib/branch-scope";
 import { getFirestoreDb } from "@/lib/firebase";
@@ -335,11 +336,10 @@ export async function saveLoyaltySettings(settings: LoyaltySettings): Promise<Lo
 }
 
 export async function fetchStaffMembersAdminOnly(): Promise<StaffMember[]> {
-  const snap = await getDocs(collection(getFirestoreDb(), "profile"));
+  const q = query(collection(getFirestoreDb(), "profile"), where("role", "==", "admin"));
+  const snap = await getDocs(q);
   return snap.docs
-    .map((d) => ({ ...mapStaff(d.id, d.data()), role: String(d.data().role ?? "") }))
-    .filter((s) => s.role === "admin")
-    .map(({ role, ...rest }) => rest)
+    .map((d) => mapStaff(d.id, d.data()))
     .sort((a, b) => a.fullName.localeCompare(b.fullName));
 }
 
@@ -364,7 +364,7 @@ export async function setStaffActive(userId: string, active: boolean): Promise<v
 }
 
 export async function deleteStaffMember(userId: string): Promise<void> {
-  await deleteDoc(doc(getFirestoreDb(), "profile", userId));
+  await setStaffActive(userId, false);
 }
 
 export async function upsertBranchRecord(branch: Branch): Promise<Branch> {

@@ -27,7 +27,9 @@ export type FeatureIconName =
   | "trash"
   | "plus"
   | "download"
-  | "file-report";
+  | "file-report"
+  | "close"
+  | "more";
 
 export function FeatureIcon({
   name,
@@ -253,6 +255,20 @@ export function FeatureIcon({
         <svg {...props}>
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
           <path d="M14 2v6h6M8 13h8M8 17h6M8 9h2" />
+        </svg>
+      );
+    case "close":
+      return (
+        <svg {...props}>
+          <path d="m6 6 12 12M18 6 6 18" />
+        </svg>
+      );
+    case "more":
+      return (
+        <svg {...props}>
+          <circle cx="5" cy="12" r="1.5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="19" cy="12" r="1.5" />
         </svg>
       );
     default:

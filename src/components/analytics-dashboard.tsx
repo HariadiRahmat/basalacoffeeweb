@@ -243,7 +243,7 @@ export function AnalyticsDashboard() {
       <section className="dashboard-page">
         <h2 className="section-heading">Data detail</h2>
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
           <div className="card flex min-h-[168px] flex-col">
           <p className="text-[13px] font-bold">Transaksi</p>
           <p className="text-[10px] text-[var(--caption)]">{metrics.periodCaption}</p>

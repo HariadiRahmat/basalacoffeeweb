@@ -93,20 +93,22 @@ export const MAIN_NAV: NavItem[] = [
     ],
   },
   {
+    href: "/dashboard/settings/admins",
+    label: "Admin & Toko",
+    icon: "store",
+    match: (p) => p.startsWith("/dashboard/settings/admins"),
+  },
+  {
     href: "/dashboard/settings",
     label: "Pengaturan",
     icon: "settings",
-    match: (p) => p.startsWith("/dashboard/settings"),
+    match: (p) =>
+      p.startsWith("/dashboard/settings") && !p.startsWith("/dashboard/settings/admins"),
     children: [
       {
         href: "/dashboard/settings",
         label: "Umum",
         match: (p) => p === "/dashboard/settings",
-      },
-      {
-        href: "/dashboard/settings/admins",
-        label: "Admin & Toko",
-        match: (p) => p.startsWith("/dashboard/settings/admins"),
       },
       {
         href: "/dashboard/settings/about",
@@ -116,3 +118,17 @@ export const MAIN_NAV: NavItem[] = [
     ],
   },
 ];
+
+export const MOBILE_BOTTOM_PRIMARY = [
+  MAIN_NAV[0],
+  MAIN_NAV[1],
+  MAIN_NAV[2],
+  MAIN_NAV[4],
+] as const;
+
+export function isMobileMoreActive(pathname: string): boolean {
+  return MAIN_NAV.some((item) => {
+    if (MOBILE_BOTTOM_PRIMARY.some((primary) => primary.href === item.href)) return false;
+    return item.match(pathname);
+  });
+}

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { DashboardGrid, PageSection } from "@/components/dashboard-layout";
-import { FeatureIcon, FeatureIconName } from "@/components/feature-icon";
 import { computeNetworkInsights } from "@/lib/analytics/branch-insights";
 import { buildPeriodMetrics } from "@/lib/analytics/period-metrics";
 import { useDashboardData } from "@/lib/dashboard-data-context";
@@ -146,29 +145,6 @@ export function HomeDashboard() {
           )}
         </div>
       </DashboardGrid>
-
-      <PageSection title="Akses Cepat" subtitle="Fitur operasional owner">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { href: "/dashboard/menu", label: "Menu", desc: "Kelola produk per toko", icon: "menu" as FeatureIconName },
-            { href: "/dashboard/transactions", label: "Transaksi", desc: "Riwayat penjualan", icon: "wallet" as FeatureIconName },
-            { href: "/dashboard/customers", label: "Pelanggan", desc: "Daftar member", icon: "customers" as FeatureIconName },
-            { href: "/dashboard/loyalty", label: "Loyalty", desc: "Program poin", icon: "loyalty" as FeatureIconName },
-            { href: "/dashboard/inventory", label: "Inventory", desc: "Stok bahan baku", icon: "inventory" as FeatureIconName },
-            { href: "/dashboard/settings/admins", label: "Admin & Toko", desc: "Kelola tim & cabang", icon: "store" as FeatureIconName },
-          ].map((item) => (
-            <Link key={item.href} href={item.href} className="menu-tile">
-              <div className="menu-tile-icon">
-                <FeatureIcon name={item.icon} />
-              </div>
-              <div>
-                <p className="font-semibold">{item.label}</p>
-                <p className="text-xs text-[var(--caption)]">{item.desc}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </PageSection>
 
       <PageSection
         title="Transaksi Hari Ini"

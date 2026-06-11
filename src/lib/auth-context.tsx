@@ -17,6 +17,7 @@ import {
 } from "react";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { fetchOwnerProfile } from "@/lib/firestore-data";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/security";
 import { OwnerProfile } from "@/lib/types";
 
 interface AuthContextValue {
@@ -81,11 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(p);
       return null;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Login gagal";
+      const msg = e instanceof Error ? e.message : "";
       if (msg.includes("invalid-credential") || msg.includes("wrong-password")) {
         return "Email atau kata sandi salah.";
       }
-      return msg;
+      if (msg.includes("too-many-requests")) {
+        return "Terlalu banyak percobaan login. Coba lagi nanti.";
+      }
+      return GENERIC_ERROR_MESSAGE;
     }
   }, []);
 

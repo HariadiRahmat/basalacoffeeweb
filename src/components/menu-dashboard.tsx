@@ -175,7 +175,7 @@ function MenuFormModal({ item, onClose, onSaved }: MenuFormModalProps) {
             />
           </label>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block text-xs font-semibold text-[var(--caption)]">
               Kode (opsional)
               <input

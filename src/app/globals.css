@@ -260,6 +260,14 @@ body {
   @apply sticky top-0 z-20 flex flex-col gap-3 border-b border-[var(--border)] bg-[var(--bg)]/95 px-4 py-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between md:px-8;
 }
 
+.dashboard-topbar-head {
+  @apply flex items-start gap-3;
+}
+
+.mobile-menu-btn {
+  @apply mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--forest)] transition hover:bg-[var(--bg)] lg:hidden;
+}
+
 .dashboard-topbar-greeting {
   @apply text-sm text-[var(--caption)];
 }
@@ -281,11 +289,11 @@ body {
 }
 
 .dashboard-topbar-actions {
-  @apply flex shrink-0 flex-wrap items-center gap-2;
+  @apply flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto;
 }
 
 .dashboard-topbar-select-wrap {
-  @apply relative min-w-[160px] max-w-[220px] flex-1 sm:flex-none;
+  @apply relative min-w-0 max-w-none flex-1 sm:min-w-[160px] sm:max-w-[220px] sm:flex-none;
 }
 
 .dashboard-topbar-select-icon {
@@ -332,15 +340,69 @@ body {
 }
 
 .mobile-nav {
-  @apply fixed bottom-0 left-0 right-0 z-30 flex gap-1 overflow-x-auto border-t border-[var(--border)] bg-[var(--surface)] p-2 lg:hidden;
+  @apply fixed bottom-0 left-0 right-0 z-30 grid grid-cols-5 border-t border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-sm lg:hidden;
+  padding-bottom: max(0.375rem, env(safe-area-inset-bottom));
 }
 
-.mobile-nav-link {
-  @apply shrink-0 rounded-full px-3 py-2 text-[11px] font-semibold text-[var(--caption)];
+.mobile-nav-item {
+  @apply flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold leading-tight text-[var(--caption)] transition;
 }
 
-.mobile-nav-link.active {
+.mobile-nav-label {
+  @apply max-w-full truncate px-0.5;
+}
+
+.mobile-nav-item.active {
+  @apply text-[var(--forest-dark)];
+}
+
+.mobile-nav-item.active svg {
+  @apply text-[var(--forest-dark)];
+}
+
+.mobile-drawer-root {
+  @apply fixed inset-0 z-40;
+}
+
+.mobile-drawer-backdrop {
+  @apply absolute inset-0 bg-black/40;
+}
+
+.mobile-drawer {
+  @apply absolute bottom-0 left-0 right-0 flex max-h-[min(85vh,720px)] flex-col rounded-t-[24px] border-t border-[var(--border)] bg-[var(--surface)] shadow-2xl;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.mobile-drawer-head {
+  @apply flex items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-4;
+}
+
+.mobile-drawer-nav {
+  @apply flex-1 space-y-1 overflow-y-auto px-3 py-3;
+}
+
+.mobile-drawer-group {
+  @apply space-y-0.5;
+}
+
+.mobile-drawer-link {
+  @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--bg)];
+}
+
+.mobile-drawer-link.active {
   @apply bg-[var(--forest-dark)] text-white;
+}
+
+.mobile-drawer-sub {
+  @apply ml-3 space-y-0.5 border-l border-[var(--border)] pl-3;
+}
+
+.mobile-drawer-sublink {
+  @apply block rounded-lg px-3 py-2 text-xs font-semibold text-[var(--caption)] transition hover:bg-[var(--bg)] hover:text-[var(--ink)];
+}
+
+.mobile-drawer-sublink.active {
+  @apply bg-[var(--lime-track)] text-[var(--forest-dark)];
 }
 
 .menu-tile {
@@ -352,11 +414,11 @@ body {
 }
 
 .data-table {
-  @apply w-full overflow-hidden rounded-[22px] border border-[var(--border)] bg-[var(--surface)];
+  @apply w-full overflow-x-auto rounded-[22px] border border-[var(--border)] bg-[var(--surface)];
 }
 
 .data-table table {
-  @apply w-full text-left text-sm;
+  @apply w-full min-w-[640px] text-left text-sm;
 }
 
 .data-table th {
@@ -594,5 +656,9 @@ body {
 @media (max-width: 1023px) {
   .dashboard-content {
     @apply pb-24;
+  }
+
+  .dashboard-topbar-title {
+    @apply text-lg;
   }
 }

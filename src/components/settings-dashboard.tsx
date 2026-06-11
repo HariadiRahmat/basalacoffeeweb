@@ -12,30 +12,6 @@ const LINKS: {
   icon: FeatureIconName;
 }[] = [
   {
-    href: "/dashboard/customers",
-    title: "Pelanggan",
-    subtitle: "Daftar pelanggan dan riwayat transaksi",
-    icon: "customers",
-  },
-  {
-    href: "/dashboard/loyalty",
-    title: "Program Loyalty",
-    subtitle: "Poin, reward, dan bonus member",
-    icon: "loyalty",
-  },
-  {
-    href: "/dashboard/inventory",
-    title: "Inventory",
-    subtitle: "Stok bahan, resep, dan opname",
-    icon: "inventory",
-  },
-  {
-    href: "/dashboard/settings/admins",
-    title: "Kelola Admin & Toko",
-    subtitle: "Kelola admin POS dan data toko/cabang",
-    icon: "store",
-  },
-  {
     href: "/dashboard/settings/about",
     title: "Tentang Aplikasi",
     subtitle: "Brand, backend, dan versi aplikasi",
@@ -63,25 +39,9 @@ export function SettingsDashboard() {
         </div>
       </div>
 
-      <PageSection title="Fitur" subtitle="Akses cepat ke modul operasional">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {LINKS.slice(0, 3).map((item) => (
-            <Link key={item.href} href={item.href} className="menu-tile">
-              <div className="menu-tile-icon">
-                <FeatureIcon name={item.icon} />
-              </div>
-              <div>
-                <p className="font-semibold">{item.title}</p>
-                <p className="text-xs text-[var(--caption)]">{item.subtitle}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </PageSection>
-
       <PageSection title="Akun & Aplikasi">
         <div className="grid gap-3 sm:grid-cols-2">
-          {LINKS.slice(3).map((item) => (
+          {LINKS.map((item) => (
             <Link key={item.href} href={item.href} className="menu-tile">
               <div className="menu-tile-icon">
                 <FeatureIcon name={item.icon} />

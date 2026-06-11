@@ -4,6 +4,7 @@ import {
   formatReportDate,
   paymentMethodLabel,
 } from "@/lib/reports/financial-report-data";
+import { sanitizeExcelRow } from "@/lib/security";
 import { Branch } from "@/lib/types";
 import { branchDisplayName } from "@/lib/branch-scope";
 
@@ -18,27 +19,31 @@ export function exportRawFinancialExcel(
   const lookup = new Map(branches.map((b) => [b.id, b.name]));
   const wb = XLSX.utils.book_new();
 
-  const transactionRows = data.orders.map((o) => ({
-    "No. Order": o.orderNumber,
-    "ID Order": o.id,
-    Tanggal: formatReportDate(o.createdAt),
-    Toko: branchDisplayName(lookup, o.branchId),
-    Pembayaran: paymentMethodLabel(o.paymentMethod),
-    Total: o.total,
-    "Jumlah Item": o.lines.reduce((s, l) => s + l.quantity, 0),
-    Status: o.status,
-  }));
-
-  const lineRows = data.orders.flatMap((o) =>
-    o.lines.map((line) => ({
+  const transactionRows = data.orders.map((o) =>
+    sanitizeExcelRow({
       "No. Order": o.orderNumber,
+      "ID Order": o.id,
       Tanggal: formatReportDate(o.createdAt),
       Toko: branchDisplayName(lookup, o.branchId),
-      Menu: line.name,
-      Qty: line.quantity,
-      "Harga Satuan": line.unitPrice,
-      Subtotal: line.subtotal,
-    })),
+      Pembayaran: paymentMethodLabel(o.paymentMethod),
+      Total: o.total,
+      "Jumlah Item": o.lines.reduce((s, l) => s + l.quantity, 0),
+      Status: o.status,
+    }),
+  );
+
+  const lineRows = data.orders.flatMap((o) =>
+    o.lines.map((line) =>
+      sanitizeExcelRow({
+        "No. Order": o.orderNumber,
+        Tanggal: formatReportDate(o.createdAt),
+        Toko: branchDisplayName(lookup, o.branchId),
+        Menu: line.name,
+        Qty: line.quantity,
+        "Harga Satuan": line.unitPrice,
+        Subtotal: line.subtotal,
+      }),
+    ),
   );
 
   const summaryRows = [
@@ -57,21 +62,25 @@ export function exportRawFinancialExcel(
     { Metrik: "Diekspor pada", Nilai: formatReportDate(data.generatedAt) },
   ];
 
-  const branchRows = data.branchRows.map((b) => ({
-    Toko: b.branchName,
-    "Total Penjualan": b.totalSales,
-    Transaksi: b.transactionCount,
-    Tunai: b.cashSales,
-    QRIS: b.qrisSales,
-    "Share (%)": Math.round(b.sharePercent * 10) / 10,
-  }));
+  const branchRows = data.branchRows.map((b) =>
+    sanitizeExcelRow({
+      Toko: b.branchName,
+      "Total Penjualan": b.totalSales,
+      Transaksi: b.transactionCount,
+      Tunai: b.cashSales,
+      QRIS: b.qrisSales,
+      "Share (%)": Math.round(b.sharePercent * 10) / 10,
+    }),
+  );
 
-  const productRows = data.topProducts.map((p, i) => ({
-    Peringkat: i + 1,
-    Menu: p.name,
-    "Qty Terjual": p.quantitySold,
-    Pendapatan: p.revenue,
-  }));
+  const productRows = data.topProducts.map((p, i) =>
+    sanitizeExcelRow({
+      Peringkat: i + 1,
+      Menu: p.name,
+      "Qty Terjual": p.quantitySold,
+      Pendapatan: p.revenue,
+    }),
+  );
 
   XLSX.utils.book_append_sheet(
     wb,
