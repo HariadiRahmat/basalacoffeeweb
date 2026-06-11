@@ -33,7 +33,7 @@ export function MobileNavDrawer() {
   return (
     <div className="mobile-drawer-root lg:hidden" role="dialog" aria-modal="true" aria-label="Menu navigasi">
       <button type="button" className="mobile-drawer-backdrop" aria-label="Tutup menu" onClick={closeDrawer} />
-      <aside className="mobile-drawer">
+      <aside id="mobile-nav-drawer" className="mobile-drawer">
         <div className="mobile-drawer-head">
           <div>
             <p className="text-sm font-bold text-[var(--ink)]">Navigasi</p>

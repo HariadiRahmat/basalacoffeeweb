@@ -40,7 +40,7 @@ export function DashboardTopbar({
 }) {
   const { profile, signOut } = useAuth();
   const { branchFilter, setBranchFilter, branches } = useBranchFilter();
-  const { openDrawer } = useMobileNav();
+  const { toggleDrawer, drawerOpen } = useMobileNav();
   const pathname = usePathname();
   const meta = pageMeta(pathname);
   const ownerName = profile?.fullName ?? "Owner";
@@ -54,8 +54,10 @@ export function DashboardTopbar({
           <button
             type="button"
             className="mobile-menu-btn"
-            aria-label="Buka menu navigasi"
-            onClick={openDrawer}
+            aria-label={drawerOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+            aria-expanded={drawerOpen}
+            aria-controls="mobile-nav-drawer"
+            onClick={toggleDrawer}
           >
             <FeatureIcon name="menu" className="h-5 w-5" />
           </button>

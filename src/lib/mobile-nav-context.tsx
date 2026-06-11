@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, createContext, useContext, useMemo, useState } from "react";
+import { ReactNode, createContext, useCallback, useContext, useMemo, useState } from "react";
 
 interface MobileNavContextValue {
   drawerOpen: boolean;
@@ -14,14 +14,18 @@ const MobileNavContext = createContext<MobileNavContextValue | null>(null);
 export function MobileNavProvider({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const toggleDrawer = useCallback(() => setDrawerOpen((open) => !open), []);
+
   const value = useMemo(
     () => ({
       drawerOpen,
-      openDrawer: () => setDrawerOpen(true),
-      closeDrawer: () => setDrawerOpen(false),
-      toggleDrawer: () => setDrawerOpen((v) => !v),
+      openDrawer,
+      closeDrawer,
+      toggleDrawer,
     }),
-    [drawerOpen],
+    [drawerOpen, openDrawer, closeDrawer, toggleDrawer],
   );
 
   return <MobileNavContext.Provider value={value}>{children}</MobileNavContext.Provider>;

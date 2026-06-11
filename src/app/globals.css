@@ -345,7 +345,7 @@ body {
 }
 
 .mobile-nav-item {
-  @apply flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold leading-tight text-[var(--caption)] transition;
+  @apply flex min-h-[52px] min-w-0 cursor-pointer touch-manipulation flex-col items-center justify-center gap-0.5 border-0 bg-transparent px-1 py-2 text-[10px] font-semibold leading-tight text-[var(--caption)] transition;
 }
 
 .mobile-nav-label {
@@ -361,11 +361,11 @@ body {
 }
 
 .mobile-drawer-root {
-  @apply fixed inset-0 z-40;
+  @apply fixed inset-0 z-50;
 }
 
 .mobile-drawer-backdrop {
-  @apply absolute inset-0 bg-black/40;
+  @apply absolute inset-0 cursor-pointer bg-black/40 touch-manipulation;
 }
 
 .mobile-drawer {

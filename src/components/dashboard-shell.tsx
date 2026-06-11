@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 
 function MobileNav() {
   const pathname = usePathname();
-  const { openDrawer } = useMobileNav();
+  const { toggleDrawer, drawerOpen } = useMobileNav();
   const moreActive = isMobileMoreActive(pathname);
 
   return (
@@ -28,6 +28,7 @@ function MobileNav() {
             href={item.href}
             className={active ? "mobile-nav-item active" : "mobile-nav-item"}
             aria-current={active ? "page" : undefined}
+            onClick={() => drawerOpen && toggleDrawer()}
           >
             <FeatureIcon name={item.icon as FeatureIconName} className="h-5 w-5 shrink-0" />
             <span className="mobile-nav-label">{item.label}</span>
@@ -36,10 +37,11 @@ function MobileNav() {
       })}
       <button
         type="button"
-        className={moreActive ? "mobile-nav-item active" : "mobile-nav-item"}
+        className={moreActive || drawerOpen ? "mobile-nav-item active" : "mobile-nav-item"}
         aria-label="Menu lainnya"
-        aria-expanded={moreActive}
-        onClick={openDrawer}
+        aria-expanded={drawerOpen}
+        aria-controls="mobile-nav-drawer"
+        onClick={toggleDrawer}
       >
         <FeatureIcon name="more" className="h-5 w-5 shrink-0" />
         <span className="mobile-nav-label">Lainnya</span>
