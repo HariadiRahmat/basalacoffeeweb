@@ -10,7 +10,6 @@ import {
   LineChart,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -25,12 +24,11 @@ import {
   buildPeriodMetrics,
   salesChartTitle,
 } from "@/lib/analytics/period-metrics";
-import { useAuth } from "@/lib/auth-context";
 import { useBranchFilter } from "@/lib/branch-filter-context";
 import { useDashboardData } from "@/lib/dashboard-data-context";
 import { chartAxisLabel, compactIdr, formatIdr } from "@/lib/format";
+import { ChartFrame } from "@/components/chart-frame";
 import { SharedFilterBar } from "@/components/shared-filter-bar";
-import { DashboardHeader } from "@/components/dashboard-header";
 import { BranchRecap, InsightPeriod } from "@/lib/types";
 
 const PIE_COLORS = ["#C1E256", "#2D4636", "#A8CA3F", "#DCE5E1", "#8A9691"];
@@ -59,7 +57,6 @@ function TrendBadge({
 }
 
 export function AnalyticsDashboard() {
-  const { profile, signOut } = useAuth();
   const { branchFilter, branches, branchName } = useBranchFilter();
   const { orders, customerCount, loading, error, refresh } = useDashboardData();
   const [period, setPeriod] = useState<InsightPeriod>("today");
@@ -102,11 +99,13 @@ export function AnalyticsDashboard() {
 
   if (error) {
     return (
-      <div className="card mx-auto max-w-lg p-8 text-center">
-        <p className="text-sm text-[var(--red)]">{error}</p>
-        <button type="button" onClick={refresh} className="btn-primary mt-4">
-          Coba lagi
-        </button>
+      <div className="dashboard-page">
+        <div className="card card-empty text-sm text-[var(--red)]">
+          <p>{error}</p>
+          <button type="button" onClick={refresh} className="btn-primary mt-4">
+            Coba lagi
+          </button>
+        </div>
       </div>
     );
   }
@@ -124,28 +123,20 @@ export function AnalyticsDashboard() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-16 pt-6 md:max-w-5xl md:px-8">
-      <DashboardHeader
-        ownerName={profile?.fullName ?? "Owner"}
-        period={period}
-        dateLabel={dateLabel}
-        onRefresh={refresh}
-        onSignOut={() => signOut()}
-      />
-
-      <section className="mb-8">
-        <div className="mb-4">
+    <div className="dashboard-page">
+      <section className="dashboard-page">
+        <div>
           <h2 className="section-heading">Performa Toko</h2>
           <p className="section-subheading">
             {branchFilter === null
               ? "Grafik penjualan semua cabang"
-              : "Penjualan per cabang"}
+              : "Penjualan per cabang"} · {dateLabel}
           </p>
         </div>
 
         <SharedFilterBar period={period} onPeriodChange={setPeriod} />
 
-        <div className="balance-card mb-3">
+        <div className="balance-card">
           <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--lime)]">
             {branchFilter === null
               ? `Semua toko · ${recapLabel(period)}`
@@ -164,21 +155,20 @@ export function AnalyticsDashboard() {
           </p>
         </div>
 
-        <div className="kpi-row mb-3">
+        <div className="kpi-row">
           <KpiTile label="Pelanggan" value={`${customerCount}`} />
           <KpiTile label="Cup terjual" value={`${metrics.totalProductsSold}`} />
           <KpiTile label="Rata-rata order" value={compactIdr(metrics.averageOrderValue)} />
         </div>
 
         {branchFilter === null && multiChart ? (
-          <div className="card p-4">
+          <div className="card">
             <h3 className="text-sm font-bold">Perbandingan Penjualan</h3>
             <p className="text-[11px] text-[var(--caption)]">
               Semua toko · {periodCaption(period, now)}
             </p>
-            <div className="mt-4 h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+            <ChartFrame height={220} className="mt-4">
+              <LineChart
                   data={multiChart.labels.map((label, i) => {
                     const row: Record<string, string | number> = { label };
                     for (const s of multiChart.series) {
@@ -227,9 +217,8 @@ export function AnalyticsDashboard() {
                       activeDot={{ r: 5 }}
                     />
                   ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+              </LineChart>
+            </ChartFrame>
             <div className="mt-3 flex flex-wrap gap-3">
               {multiChart.series.map((s) => (
                 <span key={s.branchId} className="flex items-center gap-1.5 text-[10px]">
@@ -251,12 +240,11 @@ export function AnalyticsDashboard() {
         )}
       </section>
 
-      <hr className="mb-6 border-[var(--border)]" />
+      <section className="dashboard-page">
+        <h2 className="section-heading">Data detail</h2>
 
-      <h2 className="section-heading mb-4">Data detail</h2>
-
-      <div className="mb-2.5 grid grid-cols-2 gap-2.5">
-        <div className="card flex min-h-[168px] flex-col p-3.5">
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="card flex min-h-[168px] flex-col">
           <p className="text-[13px] font-bold">Transaksi</p>
           <p className="text-[10px] text-[var(--caption)]">{metrics.periodCaption}</p>
           <p className="mt-auto text-3xl font-bold">{metrics.transactionCount}</p>
@@ -268,7 +256,7 @@ export function AnalyticsDashboard() {
             />
           </div>
         </div>
-        <div className="card flex min-h-[168px] flex-col p-3.5">
+        <div className="card flex min-h-[168px] flex-col">
           <p className="text-[13px] font-bold">Penjualan</p>
           <p className="text-[10px] text-[var(--caption)]">{metrics.periodCaption}</p>
           <p className="mt-auto text-2xl font-bold">{formatIdr(metrics.totalSales)}</p>
@@ -282,23 +270,21 @@ export function AnalyticsDashboard() {
         </div>
       </div>
 
-      <div className="card mb-2.5 p-3.5">
+      <div className="card">
         <h3 className="text-sm font-bold">{salesChartTitle(period)}</h3>
         <p className="text-xl font-bold">{formatIdr(metrics.totalSales)}</p>
-        <div className="mt-3 h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={metrics.salesChart} margin={{ left: 0, right: 4, top: 8 }}>
+        <ChartFrame height={200} className="mt-3">
+          <BarChart data={metrics.salesChart} margin={{ left: 0, right: 4, top: 8 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
               <XAxis dataKey="label" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={chartAxisLabel} tick={{ fontSize: 10 }} width={36} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v) => formatIdr(Number(v ?? 0))} />
               <Bar dataKey="amount" fill="var(--lime)" radius={[6, 6, 0, 0]} maxBarSize={48} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+          </BarChart>
+        </ChartFrame>
       </div>
 
-      <div className="card mb-2.5 p-3.5">
+      <div className="card">
         <h3 className="text-sm font-bold">Pembayaran</h3>
         <div className="mt-3 space-y-2 text-[11px]">
           <PaymentRow
@@ -323,15 +309,15 @@ export function AnalyticsDashboard() {
         </div>
       </div>
 
-      <div className="card mb-2.5 p-4">
+      <div className="card">
         <h3 className="text-sm font-bold">Menu Terlaris</h3>
         <p className="text-[11px] text-[var(--caption)]">{metrics.periodCaption}</p>
         {topProducts.length === 0 ? (
           <p className="mt-6 text-center text-xs text-[var(--caption)]">Belum ada data</p>
         ) : (
           <div className="mt-4 flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-6 md:gap-10">
-            <div className="relative h-[168px] w-[168px] shrink-0 sm:h-[188px] sm:w-[188px] md:h-[220px] md:w-[220px] lg:h-[240px] lg:w-[240px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="relative mx-auto h-[200px] w-[200px] shrink-0">
+              <ChartFrame height={200} className="absolute inset-0">
                 <PieChart>
                   <Pie
                     data={topProducts}
@@ -348,7 +334,7 @@ export function AnalyticsDashboard() {
                     ))}
                   </Pie>
                 </PieChart>
-              </ResponsiveContainer>
+              </ChartFrame>
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
                 <span className="text-[11px] font-semibold text-[var(--caption)] md:text-xs">
                   Total
@@ -378,6 +364,7 @@ export function AnalyticsDashboard() {
           </div>
         )}
       </div>
+      </section>
     </div>
   );
 }

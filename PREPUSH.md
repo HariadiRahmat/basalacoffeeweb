@@ -47,3 +47,33 @@ Vercel: set **Root Directory** = `owner-dashboard`.
 3. `firebase deploy --only firestore:rules` (dari root project)
 
 Detail: [SECURITY.md](./SECURITY.md)
+
+## Navigasi malah download file / error 500?
+
+Biasanya cache dev Next.js rusak (`prerender-manifest.json` hilang). Gejala:
+- Console: `Failed to fetch RSC payload` / `500 Internal Server Error`
+- Navigasi mendownload file atau halaman putih
+
+```bash
+cd owner-dashboard
+# hentikan dev server dulu (Ctrl+C di terminal npm run dev)
+npm run dev:clean
+```
+
+Script `predev` sekarang otomatis membersihkan cache rusak saat `npm run dev`.
+
+Pastikan hanya **satu** proses dev yang jalan (port 3000). Jangan jalankan `npm run build` bersamaan dengan `npm run dev`.
+
+## Warning Firebase OAuth (192.168.x.x)
+
+Jika buka dashboard lewat IP LAN (mis. `http://192.168.1.6:3000`), console bisa menampilkan:
+
+`The current domain is not authorized for OAuth operations`
+
+Login **email/password tetap jalan**. Warning ini muncul karena Firebase Auth SDK memuat iframe OAuth.
+
+**Opsi perbaikan:**
+1. Pakai `http://localhost:3000` saat development di laptop yang sama
+2. Atau tambahkan IP/domain ke Firebase Console → **Authentication** → **Settings** → **Authorized domains** → **Add domain** (`192.168.1.6`)
+
+Untuk production, pastikan domain Vercel sudah ada di daftar Authorized domains.

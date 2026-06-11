@@ -2,6 +2,7 @@
 
 import { useBranchFilter } from "@/lib/branch-filter-context";
 import { DashboardFilterBar } from "@/components/dashboard-filters";
+import { FeatureIcon } from "@/components/feature-icon";
 import { InsightPeriod } from "@/lib/types";
 
 export function SharedFilterBar({
@@ -17,25 +18,21 @@ export function SharedFilterBar({
 
   if (!showPeriod || !period || !onPeriodChange) {
     return (
-      <div className="card card-compact filter-bar mb-4">
-        <div className="filter-field">
-          <p className="filter-field-label">Toko</p>
-          <select
-            className="control-select w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm"
-            value={branchFilter ?? ""}
-            onChange={(e) =>
-              setBranchFilter(e.target.value === "" ? null : e.target.value)
-            }
-            aria-label="Pilih toko"
-          >
-            <option value="">Semua toko</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="menu-toolbar">
+        <FeatureIcon name="store" className="h-4 w-4 shrink-0 text-[var(--forest)]" />
+        <select
+          className="menu-toolbar-select"
+          value={branchFilter ?? ""}
+          onChange={(e) => setBranchFilter(e.target.value === "" ? null : e.target.value)}
+          aria-label="Pilih toko"
+        >
+          <option value="">Semua toko</option>
+          {branches.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
       </div>
     );
   }

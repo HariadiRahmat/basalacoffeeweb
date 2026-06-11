@@ -123,6 +123,53 @@ export interface OwnerProfile {
   role: string;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  totalPurchases: number;
+  loyaltyPoints: number;
+}
+
+export type NewMemberRewardType = "discountPercent" | "discountFixed" | "bonusPoints";
+export type RedeemRewardType = "discountPercent" | "discountFixed";
+
+export interface LoyaltySettings {
+  programEnabled: boolean;
+  newMemberEnabled: boolean;
+  newMemberRewardType: NewMemberRewardType;
+  newMemberDiscountPercent: number;
+  newMemberDiscountFixed: number;
+  newMemberBonusPoints: number;
+  pointsEnabled: boolean;
+  spendAmountPerPoint: number;
+  pointsPerSpendUnit: number;
+  redeemEnabled: boolean;
+  redeemPointsRequired: number;
+  redeemRewardType: RedeemRewardType;
+  redeemDiscountPercent: number;
+  redeemDiscountFixed: number;
+}
+
+export interface StaffMember {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  branchId?: string;
+  isActive: boolean;
+}
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  new: "Baru",
+  processing: "Diproses",
+  ready: "Siap",
+  completed: "Selesai",
+  cancelled: "Batal",
+  open: "Open Bill",
+};
+
 
 export const PERIOD_LABELS: Record<InsightPeriod, string> = {
   today: "Hari Ini",

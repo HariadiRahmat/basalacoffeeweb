@@ -13,6 +13,8 @@ import { filterByBranchScope } from "@/lib/branch-scope";
 import { getFirestoreDb } from "@/lib/firebase";
 import {
   Branch,
+  Customer,
+  LoyaltySettings,
   MenuCategory,
   MenuCupSize,
   MenuItem,
@@ -20,6 +22,7 @@ import {
   OrderLine,
   OrderStatus,
   OwnerProfile,
+  StaffMember,
 } from "@/lib/types";
 
 function parseDate(value: unknown): Date {
@@ -215,4 +218,179 @@ export function defaultCupSizesForCategory(category: MenuCategory): MenuCupSize[
     ];
   }
   return [{ id: "standar", label: "Standar", price: 0 }];
+}
+
+function mapCustomer(id: string, data: Record<string, unknown>): Customer {
+  return {
+    id,
+    name: String(data.name ?? "Pelanggan"),
+    phone: data.phone ? String(data.phone) : undefined,
+    email: data.email ? String(data.email) : undefined,
+    totalPurchases: Number(data.total_purchases ?? 0),
+    loyaltyPoints: Number(data.loyalty_points ?? 0),
+  };
+}
+
+const DEFAULT_LOYALTY: LoyaltySettings = {
+  programEnabled: true,
+  newMemberEnabled: true,
+  newMemberRewardType: "discountPercent",
+  newMemberDiscountPercent: 10,
+  newMemberDiscountFixed: 5000,
+  newMemberBonusPoints: 50,
+  pointsEnabled: true,
+  spendAmountPerPoint: 10000,
+  pointsPerSpendUnit: 1,
+  redeemEnabled: true,
+  redeemPointsRequired: 100,
+  redeemRewardType: "discountPercent",
+  redeemDiscountPercent: 5,
+  redeemDiscountFixed: 10000,
+};
+
+function mapLoyalty(data: Record<string, unknown>): LoyaltySettings {
+  return {
+    programEnabled: (data.program_enabled as boolean | undefined) ?? DEFAULT_LOYALTY.programEnabled,
+    newMemberEnabled: (data.new_member_enabled as boolean | undefined) ?? DEFAULT_LOYALTY.newMemberEnabled,
+    newMemberRewardType:
+      (data.new_member_reward_type as LoyaltySettings["newMemberRewardType"]) ??
+      DEFAULT_LOYALTY.newMemberRewardType,
+    newMemberDiscountPercent: Number(
+      data.new_member_discount_percent ?? DEFAULT_LOYALTY.newMemberDiscountPercent,
+    ),
+    newMemberDiscountFixed: Number(
+      data.new_member_discount_fixed ?? DEFAULT_LOYALTY.newMemberDiscountFixed,
+    ),
+    newMemberBonusPoints: Number(data.new_member_bonus_points ?? DEFAULT_LOYALTY.newMemberBonusPoints),
+    pointsEnabled: (data.points_enabled as boolean | undefined) ?? DEFAULT_LOYALTY.pointsEnabled,
+    spendAmountPerPoint: Number(data.spend_amount_per_point ?? DEFAULT_LOYALTY.spendAmountPerPoint),
+    pointsPerSpendUnit: Number(data.points_per_spend_unit ?? DEFAULT_LOYALTY.pointsPerSpendUnit),
+    redeemEnabled: (data.redeem_enabled as boolean | undefined) ?? DEFAULT_LOYALTY.redeemEnabled,
+    redeemPointsRequired: Number(data.redeem_points_required ?? DEFAULT_LOYALTY.redeemPointsRequired),
+    redeemRewardType:
+      (data.redeem_reward_type as LoyaltySettings["redeemRewardType"]) ??
+      DEFAULT_LOYALTY.redeemRewardType,
+    redeemDiscountPercent: Number(data.redeem_discount_percent ?? DEFAULT_LOYALTY.redeemDiscountPercent),
+    redeemDiscountFixed: Number(data.redeem_discount_fixed ?? DEFAULT_LOYALTY.redeemDiscountFixed),
+  };
+}
+
+function loyaltyToFirestore(settings: LoyaltySettings): Record<string, unknown> {
+  return {
+    program_enabled: settings.programEnabled,
+    new_member_enabled: settings.newMemberEnabled,
+    new_member_reward_type: settings.newMemberRewardType,
+    new_member_discount_percent: settings.newMemberDiscountPercent,
+    new_member_discount_fixed: settings.newMemberDiscountFixed,
+    new_member_bonus_points: settings.newMemberBonusPoints,
+    points_enabled: settings.pointsEnabled,
+    spend_amount_per_point: settings.spendAmountPerPoint,
+    points_per_spend_unit: settings.pointsPerSpendUnit,
+    redeem_enabled: settings.redeemEnabled,
+    redeem_points_required: settings.redeemPointsRequired,
+    redeem_reward_type: settings.redeemRewardType,
+    redeem_discount_percent: settings.redeemDiscountPercent,
+    redeem_discount_fixed: settings.redeemDiscountFixed,
+  };
+}
+
+function mapStaff(id: string, data: Record<string, unknown>): StaffMember {
+  return {
+    id,
+    fullName: String(data.full_name ?? ""),
+    email: String(data.email ?? ""),
+    phone: data.phone ? String(data.phone) : undefined,
+    branchId: data.branch_id ? String(data.branch_id) : undefined,
+    isActive: (data.active as boolean | undefined) ?? true,
+  };
+}
+
+function branchToFirestore(branch: Branch): Record<string, unknown> {
+  return {
+    name: branch.name,
+    address: branch.address,
+    phone: branch.phone ?? null,
+    is_active: branch.isActive,
+    open_time: branch.openTime,
+    close_time: branch.closeTime,
+  };
+}
+
+export async function fetchCustomers(): Promise<Customer[]> {
+  const snap = await getDocs(query(collection(getFirestoreDb(), "customers"), orderBy("name")));
+  return snap.docs.map((d) => mapCustomer(d.id, d.data()));
+}
+
+export async function fetchLoyaltySettings(): Promise<LoyaltySettings> {
+  const snap = await getDoc(doc(getFirestoreDb(), "loyalty_settings", "default"));
+  if (!snap.exists()) return DEFAULT_LOYALTY;
+  return mapLoyalty(snap.data());
+}
+
+export async function saveLoyaltySettings(settings: LoyaltySettings): Promise<LoyaltySettings> {
+  await setDoc(doc(getFirestoreDb(), "loyalty_settings", "default"), loyaltyToFirestore(settings), {
+    merge: true,
+  });
+  return settings;
+}
+
+export async function fetchStaffMembersAdminOnly(): Promise<StaffMember[]> {
+  const snap = await getDocs(collection(getFirestoreDb(), "profile"));
+  return snap.docs
+    .map((d) => ({ ...mapStaff(d.id, d.data()), role: String(d.data().role ?? "") }))
+    .filter((s) => s.role === "admin")
+    .map(({ role, ...rest }) => rest)
+    .sort((a, b) => a.fullName.localeCompare(b.fullName));
+}
+
+export async function updateStaffMember(member: StaffMember): Promise<StaffMember> {
+  await setDoc(
+    doc(getFirestoreDb(), "profile", member.id),
+    {
+      full_name: member.fullName,
+      email: member.email,
+      phone: member.phone ?? null,
+      branch_id: member.branchId ?? null,
+      active: member.isActive,
+      role: "admin",
+    },
+    { merge: true },
+  );
+  return member;
+}
+
+export async function setStaffActive(userId: string, active: boolean): Promise<void> {
+  await setDoc(doc(getFirestoreDb(), "profile", userId), { active }, { merge: true });
+}
+
+export async function deleteStaffMember(userId: string): Promise<void> {
+  await deleteDoc(doc(getFirestoreDb(), "profile", userId));
+}
+
+export async function upsertBranchRecord(branch: Branch): Promise<Branch> {
+  await setDoc(doc(getFirestoreDb(), "branches", branch.id), branchToFirestore(branch), {
+    merge: true,
+  });
+  return branch;
+}
+
+export async function deleteBranchRecord(branchId: string): Promise<void> {
+  await deleteDoc(doc(getFirestoreDb(), "branches", branchId));
+}
+
+export async function fetchOrderById(id: string): Promise<Order | null> {
+  const snap = await getDoc(doc(getFirestoreDb(), "orders", id));
+  if (!snap.exists()) return null;
+  return mapOrder(snap.id, snap.data());
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
+  const ref = doc(getFirestoreDb(), "orders", id);
+  await setDoc(ref, { status, updated_at: Timestamp.now() }, { merge: true });
+  const saved = await getDoc(ref);
+  return mapOrder(saved.id, saved.data()!);
+}
+
+export async function fetchBranchesAll(): Promise<Branch[]> {
+  return fetchBranches(false);
 }

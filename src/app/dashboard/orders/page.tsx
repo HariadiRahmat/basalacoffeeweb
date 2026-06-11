@@ -1,5 +1,5 @@
-import { OrdersDashboard } from "@/components/orders-dashboard";
+import { redirect } from "next/navigation";
 
-export default function OrdersPage() {
-  return <OrdersDashboard />;
+export default function OrdersRedirectPage() {
+  redirect("/dashboard/transactions");
 }

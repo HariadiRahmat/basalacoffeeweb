@@ -11,6 +11,11 @@ const NAV = [
     label: "Transaksi",
     match: (p: string) => p.startsWith("/dashboard/orders"),
   },
+  {
+    href: "/dashboard/inventory",
+    label: "Inventory",
+    match: (p: string) => p.startsWith("/dashboard/inventory"),
+  },
 ];
 
 export function DashboardNav() {

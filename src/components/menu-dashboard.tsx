@@ -1,10 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { DashboardHeader } from "@/components/dashboard-header";
-import { SharedFilterBar } from "@/components/shared-filter-bar";
+import { FeatureIcon } from "@/components/feature-icon";
 import { resolveMenuBranchId } from "@/lib/branch-scope";
-import { useAuth } from "@/lib/auth-context";
 import { useBranchFilter } from "@/lib/branch-filter-context";
 import { useDashboardData } from "@/lib/dashboard-data-context";
 import {
@@ -296,8 +294,7 @@ function MenuFormModal({ item, onClose, onSaved }: MenuFormModalProps) {
 }
 
 export function MenuDashboard() {
-  const { profile, signOut } = useAuth();
-  const { branchFilter, branchName } = useBranchFilter();
+  const { branchFilter, setBranchFilter, branches, branchName } = useBranchFilter();
   const { menuItems, loading, error, refresh } = useDashboardData();
   const [editing, setEditing] = useState<MenuItem | null>(null);
   const [creating, setCreating] = useState(false);
@@ -308,93 +305,101 @@ export function MenuDashboard() {
     await refresh();
   };
 
-  const dateLabel = new Date().toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="flex min-h-[40vh] items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--lime)] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-16 pt-6 md:max-w-5xl md:px-8">
-      <DashboardHeader
-        ownerName={profile?.fullName ?? "Owner"}
-        period="today"
-        dateLabel={dateLabel}
-        onRefresh={refresh}
-        onSignOut={() => signOut()}
-        title="Menu"
-        subtitle={
-          branchFilter
-            ? `Kelola menu · ${branchName(branchFilter)}`
-            : "Kelola menu per toko"
-        }
-      />
+    <div className="dashboard-page">
+      <div className="menu-toolbar">
+        <select
+          className="menu-toolbar-select"
+          value={branchFilter ?? ""}
+          onChange={(e) => setBranchFilter(e.target.value === "" ? null : e.target.value)}
+          aria-label="Filter toko"
+        >
+          <option value="">Semua toko</option>
+          {branches.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
 
-      <SharedFilterBar showPeriod={false} />
+        <span className="chip shrink-0">{menuItems.length} menu</span>
 
-      <div className="mb-4 flex justify-end">
-        <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
-          + Tambah Menu
+        <button
+          type="button"
+          className="btn-primary ml-auto inline-flex shrink-0 items-center gap-1.5 !px-3.5 !py-2 text-xs"
+          onClick={() => setCreating(true)}
+        >
+          <FeatureIcon name="plus" className="h-4 w-4" />
+          Tambah
         </button>
       </div>
 
-      {error && (
-        <div className="card mb-4 p-4 text-sm text-[var(--red)]">{error}</div>
-      )}
+      {error && <p className="text-sm text-[var(--red)]">{error}</p>}
 
       {menuItems.length === 0 ? (
-        <div className="card p-8 text-center">
-          <p className="text-sm text-[var(--caption)]">
+        <div className="menu-list">
+          <p className="menu-empty">
             {branchFilter
-              ? "Belum ada menu untuk toko ini."
+              ? `Belum ada menu untuk ${branchName(branchFilter)}.`
               : "Belum ada menu. Pilih toko atau tambah menu baru."}
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {menuItems.map((item) => (
-            <div key={item.id} className="card card-compact flex gap-3 p-4">
-              <div className="min-w-0 flex-1">
-                <p className="font-bold">{item.name}</p>
-                <p className="text-[11px] text-[var(--caption)]">
-                  {MENU_CATEGORY_LABELS[item.category]}
-                  {item.code ? ` · ${item.code}` : ""}
-                  {!branchFilter && item.branchId
-                    ? ` · ${branchName(item.branchId)}`
-                    : ""}
-                </p>
-                <p className="mt-1 text-sm font-bold">{menuPriceLabel(item)}</p>
-                <p className="text-[10px] text-[var(--caption)]">
-                  {item.cupSizes.length} ukuran · Stok {item.stock}
-                  {!item.isAvailable ? " · Nonaktif" : ""}
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-2">
+        <div className="menu-list">
+          {menuItems.map((item) => {
+            const meta = [
+              MENU_CATEGORY_LABELS[item.category],
+              item.code || null,
+              !branchFilter && item.branchId ? branchName(item.branchId) : null,
+              `${item.cupSizes.length} ukuran`,
+              `Stok ${item.stock}`,
+            ]
+              .filter(Boolean)
+              .join(" · ");
+
+            return (
+              <div key={item.id} className="menu-row">
+                <div className="menu-row-main">
+                  <div className="flex items-baseline gap-2">
+                    <p className="menu-row-name">{item.name}</p>
+                    <span className="menu-row-price-mobile">{menuPriceLabel(item)}</span>
+                  </div>
+                  <p className="menu-row-meta">{meta}</p>
+                </div>
+
+                {!item.isAvailable && (
+                  <span className="menu-row-badge chip !bg-red-50 !text-[var(--red)]">Off</span>
+                )}
+
+                <p className="menu-row-price">{menuPriceLabel(item)}</p>
+
                 <button
                   type="button"
-                  className="btn-outline px-3 py-1.5 text-xs"
+                  className="icon-btn"
+                  aria-label={`Edit ${item.name}`}
                   onClick={() => setEditing(item)}
                 >
-                  Edit
+                  <FeatureIcon name="edit" className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-[var(--red)]"
+                  className="icon-btn icon-btn-danger"
+                  aria-label={`Hapus ${item.name}`}
                   onClick={() => handleDelete(item)}
                 >
-                  Hapus
+                  <FeatureIcon name="trash" className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
